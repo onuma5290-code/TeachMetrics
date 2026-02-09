@@ -1,5 +1,5 @@
-# ใช้ PHP 8.4 CLI สำหรับ Laravel
-FROM php:8.4-cli-bookworm
+# Stage 1: Build dependencies
+FROM php:8.4-cli-bookworm AS builder
 
 # ติดตั้ง System Dependencies
 RUN apt-get update && apt-get install -y \
@@ -11,38 +11,52 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ติดตั้ง PHP Extensions
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# ติดตั้ง Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+# คัดลอกเฉพาะ composer files ก่อน (สำหรับ cache)
+COPY composer.json composer.lock ./
+
+# รัน Composer Install (layer นี้จะถูก cache ถ้า composer.json ไม่เปลี่ยน)
+RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
+
+# Stage 2: Final image
+FROM php:8.4-cli-bookworm
+
+# ติดตั้ง runtime dependencies เท่านั้น
+RUN apt-get update && apt-get install -y \
     sqlite3 \
     libsqlite3-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ติดตั้ง PHP Extensions
-RUN docker-php-ext-install pdo pdo_sqlite pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN docker-php-ext-install pdo pdo_sqlite
 
-# ติดตั้ง Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# ตั้งค่า Working Directory
 WORKDIR /var/www
+
+# คัดลอก vendor จาก builder stage
+COPY --from=builder /var/www/vendor ./vendor
 
 # คัดลอกไฟล์โปรเจกต์
 COPY . .
 
 # คัดลอก .env สำหรับ production
-RUN cp .env.railway .env || echo "No .env.railway found, using environment variables"
-
-# รัน Composer Install
-RUN composer install --optimize-autoloader --no-dev --no-interaction
+RUN cp .env.railway .env || echo "No .env.railway found"
 
 # สร้าง SQLite database และ storage directories
-RUN mkdir -p database storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+RUN mkdir -p database storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && touch database/database.sqlite \
-    && chmod -R 777 storage bootstrap/cache database \
-    && chown -R www-data:www-data storage bootstrap/cache database || true
+    && chmod -R 777 storage bootstrap/cache database
 
 # ลบ cache เก่า
-RUN php artisan config:clear || true \
-    && php artisan cache:clear || true \
-    && php artisan view:clear || true
+RUN php artisan config:clear || true
 
 # เปิดพอร์ต
 EXPOSE 8080
