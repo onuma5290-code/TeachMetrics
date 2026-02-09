@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: teachmetrics
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free
+    envVars:
+      - key: APP_KEY
+        value: base64:P6MgqjWHjCWsSiGuCR8YKBggOHJLUwGZ857sXZ3zGE6U=
+      - key: APP_NAME
+        value: TeachMetrics
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: LOG_LEVEL
+        value: error
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: PORT
+        value: 8080
