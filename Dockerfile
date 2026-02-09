@@ -27,22 +27,29 @@ WORKDIR /var/www
 # คัดลอกไฟล์โปรเจกต์
 COPY . .
 
+# คัดลอก .env สำหรับ production
+RUN cp .env.railway .env || echo "No .env.railway found, using environment variables"
+
 # รัน Composer Install
 RUN composer install --optimize-autoloader --no-dev --no-interaction
 
 # สร้าง SQLite database และ storage directories
 RUN mkdir -p database storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
     && touch database/database.sqlite \
-    && chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache database
+    && chmod -R 777 storage bootstrap/cache database \
+    && chown -R www-data:www-data storage bootstrap/cache database || true
 
-# Cache Laravel configuration
-RUN php artisan config:cache || true \
-    && php artisan route:cache || true \
-    && php artisan view:cache || true
+# ลบ cache เก่า
+RUN php artisan config:clear || true \
+    && php artisan cache:clear || true \
+    && php artisan view:clear || true
 
 # เปิดพอร์ต
 EXPOSE 8080
 
 # รัน migrations และ start server
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD php artisan migrate --force && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
