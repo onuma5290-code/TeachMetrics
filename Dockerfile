@@ -21,11 +21,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# คัดลอก composer.json
-COPY composer.json ./
+# คัดลอก composer files
+COPY composer.json composer.lock ./
 
-# รัน Composer (ใช้ update เพราะไม่มี lock file)
-RUN composer update --optimize-autoloader --no-dev --no-interaction --no-scripts
+# รัน Composer install (ใช้ lock file เพื่อความสม่ำเสมอ)
+RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
 
 # Stage 2: Final image
 FROM php:8.4-cli-bookworm
