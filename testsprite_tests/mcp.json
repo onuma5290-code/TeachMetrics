@@ -1,0 +1,75 @@
+{
+  "mcpServers": {
+    "teachmetrics-tests": {
+      "command": "python",
+      "args": ["testsprite_tests/mcp_server.py"],
+      "cwd": "F:/TeachMetrics/TeachMetrics",
+      "env": {
+        "PYTHONPATH": ".",
+        "APP_ENV": "testing"
+      },
+      "description": "MCP Server for TeachMetrics TestSprite Integration",
+      "features": {
+        "test_execution": true,
+        "test_reporting": true,
+        "connection_testing": true,
+        "configuration_retrieval": true
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "run_tests",
+      "description": "Execute test suite (AUTH, STU, TCH, DB, or all)",
+      "server": "teachmetrics-tests",
+      "parameters": {
+        "suite": {
+          "type": "string",
+          "enum": ["AUTH", "STU", "TCH", "DB", "all"],
+          "default": "all"
+        },
+        "verbose": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    {
+      "name": "get_test_plan",
+      "description": "Retrieve test plan details",
+      "server": "teachmetrics-tests",
+      "parameters": {
+        "suite": {
+          "type": "string",
+          "description": "Filter by test suite (optional)"
+        }
+      }
+    },
+    {
+      "name": "get_config",
+      "description": "Get TestSprite configuration",
+      "server": "teachmetrics-tests"
+    },
+    {
+      "name": "test_connection",
+      "description": "Test backend and database connectivity",
+      "server": "teachmetrics-tests"
+    },
+    {
+      "name": "generate_report",
+      "description": "Generate test execution report",
+      "server": "teachmetrics-tests",
+      "parameters": {
+        "format": {
+          "type": "string",
+          "enum": ["json", "html"],
+          "default": "json"
+        },
+        "suite": {
+          "type": "string",
+          "description": "Filter report by suite (optional)"
+        }
+      }
+    }
+  ]
+}

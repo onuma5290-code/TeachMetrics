@@ -1,0 +1,49 @@
+{
+  "status": "active",
+  "type": "backend",
+  "framework": "laravel",
+  "version": "12.49.0",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "frontendEndpoint": "http://localhost:5173",
+  "backendAuthType": "session",
+  "testFramework": "phpunit",
+  "database": {
+    "connection": "mysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "database": "teacher_evaluation_db",
+    "username": "root",
+    "password": ""
+  },
+  "apiDocumentation": "http://localhost:8000/api/docs",
+  "testSuitePath": "./testsprite_tests",
+  "reportPath": "./testsprite_tests/reports",
+  "features": {
+    "authentication": true,
+    "authorization": true,
+    "dataValidation": true,
+    "databaseIntegrity": true,
+    "errorHandling": true
+  },
+  "integrationSettings": {
+    "collectCoverage": true,
+    "generateReport": true,
+    "notifyOnFailure": true,
+    "retryFailedTests": true,
+    "maxRetries": 3,
+    "timeoutSeconds": 30
+  },
+  "testAccounts": {
+    "student": {
+      "email": "studenttest",
+      "password": "123456",
+      "role": "student"
+    },
+    "teacher": {
+      "email": "teachertest",
+      "password": "123456",
+      "role": "teacher"
+    }
+  }
+}

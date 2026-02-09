@@ -1,0 +1,376 @@
+{
+  "projectName": "TeachMetrics - Teacher Evaluation System",
+  "projectVersion": "1.0.0",
+  "description": "Test Plan for Teacher Evaluation System integrated with TestSprite",
+  "backendEndpoint": "http://localhost:8000",
+  "frontendEndpoint": "http://localhost:5173",
+  "authType": "session",
+  "testSuites": [
+    {
+      "suiteName": "Authentication & Authorization",
+      "suiteId": "AUTH",
+      "description": "Tests for login, registration, and role-based access control",
+      "testCases": [
+        {
+          "testId": "AUTH-01",
+          "title": "Student Registration",
+          "description": "Register a new student account with valid credentials",
+          "endpoint": "POST /api/register",
+          "method": "POST",
+          "requestBody": {
+            "name": "Test Student",
+            "email": "student@example.com",
+            "password": "password123",
+            "password_confirmation": "password123",
+            "role": "student"
+          },
+          "expectedStatus": 201,
+          "expectedResponse": {
+            "status": "success",
+            "message": "Student registered successfully"
+          },
+          "tags": ["registration", "student"]
+        },
+        {
+          "testId": "AUTH-02",
+          "title": "Teacher Registration",
+          "description": "Register a new teacher account with valid credentials",
+          "endpoint": "POST /api/register",
+          "method": "POST",
+          "requestBody": {
+            "name": "Test Teacher",
+            "email": "teacher@example.com",
+            "password": "password123",
+            "password_confirmation": "password123",
+            "role": "teacher"
+          },
+          "expectedStatus": 201,
+          "expectedResponse": {
+            "status": "success",
+            "message": "Teacher registered successfully"
+          },
+          "tags": ["registration", "teacher"]
+        },
+        {
+          "testId": "AUTH-03",
+          "title": "Student Login",
+          "description": "Login with student credentials",
+          "endpoint": "POST /api/login",
+          "method": "POST",
+          "requestBody": {
+            "email": "studenttest",
+            "password": "123456"
+          },
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "role": "student"
+          },
+          "tags": ["login", "student"]
+        },
+        {
+          "testId": "AUTH-04",
+          "title": "Teacher Login",
+          "description": "Login with teacher credentials",
+          "endpoint": "POST /api/login",
+          "method": "POST",
+          "requestBody": {
+            "email": "teachertest",
+            "password": "123456"
+          },
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "role": "teacher"
+          },
+          "tags": ["login", "teacher"]
+        },
+        {
+          "testId": "AUTH-05",
+          "title": "Unauthorized Access",
+          "description": "Attempt to access protected route without authentication",
+          "endpoint": "GET /dashboard",
+          "method": "GET",
+          "headers": {
+            "Authorization": ""
+          },
+          "expectedStatus": 401,
+          "expectedResponse": {
+            "message": "Unauthenticated"
+          },
+          "tags": ["authorization", "security"]
+        },
+        {
+          "testId": "AUTH-06",
+          "title": "Role Isolation",
+          "description": "Student cannot access teacher-only endpoints",
+          "endpoint": "GET /api/teacher/dashboard",
+          "method": "GET",
+          "requiresAuth": "student",
+          "expectedStatus": 403,
+          "expectedResponse": {
+            "message": "Unauthorized access"
+          },
+          "tags": ["authorization", "role-based"]
+        }
+      ]
+    },
+    {
+      "suiteName": "Student Module",
+      "suiteId": "STU",
+      "description": "Tests for student functionality and evaluation submission",
+      "testCases": [
+        {
+          "testId": "STU-01",
+          "title": "View Student Dashboard",
+          "description": "Student views their dashboard with available teachers/subjects",
+          "endpoint": "GET /api/student/dashboard",
+          "method": "GET",
+          "requiresAuth": "student",
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "data": {
+              "teachers": []
+            }
+          },
+          "tags": ["student", "dashboard"]
+        },
+        {
+          "testId": "STU-02",
+          "title": "View Evaluation Form",
+          "description": "Student views the evaluation form for a specific subject",
+          "endpoint": "GET /api/evaluate/{subject_id}",
+          "method": "GET",
+          "requiresAuth": "student",
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "data": {
+              "subject_id": 1,
+              "teacher_name": "Test Teacher",
+              "questions": 15
+            }
+          },
+          "tags": ["student", "evaluation"]
+        },
+        {
+          "testId": "STU-03",
+          "title": "Submit Evaluation - Success",
+          "description": "Student submits completed evaluation with all 15 questions answered",
+          "endpoint": "POST /api/evaluate",
+          "method": "POST",
+          "requiresAuth": "student",
+          "requestBody": {
+            "subject_id": 1,
+            "question_1": 5,
+            "question_2": 4,
+            "question_3": 5,
+            "question_4": 4,
+            "question_5": 5,
+            "question_6": 4,
+            "question_7": 5,
+            "question_8": 4,
+            "question_9": 5,
+            "question_10": 4,
+            "question_11": 5,
+            "question_12": 4,
+            "question_13": 5,
+            "question_14": 4,
+            "question_15": 5,
+            "evaluation_note": "Excellent teaching"
+          },
+          "expectedStatus": 201,
+          "expectedResponse": {
+            "status": "success",
+            "message": "Evaluation submitted successfully"
+          },
+          "tags": ["student", "evaluation", "submission"]
+        },
+        {
+          "testId": "STU-04",
+          "title": "Submit Evaluation - Validation Error",
+          "description": "Student attempts to submit evaluation with missing required fields",
+          "endpoint": "POST /api/evaluate",
+          "method": "POST",
+          "requiresAuth": "student",
+          "requestBody": {
+            "subject_id": 1,
+            "question_1": 5
+          },
+          "expectedStatus": 422,
+          "expectedResponse": {
+            "message": "Validation failed"
+          },
+          "tags": ["student", "evaluation", "validation"]
+        },
+        {
+          "testId": "STU-05",
+          "title": "Submit Evaluation Note",
+          "description": "Student submits evaluation with additional notes/feedback",
+          "endpoint": "POST /api/evaluate",
+          "method": "POST",
+          "requiresAuth": "student",
+          "requestBody": {
+            "subject_id": 1,
+            "question_1": 5,
+            "question_2": 4,
+            "question_3": 5,
+            "question_4": 4,
+            "question_5": 5,
+            "question_6": 4,
+            "question_7": 5,
+            "question_8": 4,
+            "question_9": 5,
+            "question_10": 4,
+            "question_11": 5,
+            "question_12": 4,
+            "question_13": 5,
+            "question_14": 4,
+            "question_15": 5,
+            "evaluation_note": "Great teaching methods and friendly approach"
+          },
+          "expectedStatus": 201,
+          "expectedResponse": {
+            "status": "success"
+          },
+          "tags": ["student", "evaluation", "notes"]
+        }
+      ]
+    },
+    {
+      "suiteName": "Teacher Module",
+      "suiteId": "TCH",
+      "description": "Tests for teacher functionality and evaluation viewing",
+      "testCases": [
+        {
+          "testId": "TCH-01",
+          "title": "View Teacher Dashboard",
+          "description": "Teacher views their dashboard with teaching subjects and profile",
+          "endpoint": "GET /api/teacher/dashboard",
+          "method": "GET",
+          "requiresAuth": "teacher",
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "data": {
+              "teacher_name": "Test Teacher",
+              "subjects": []
+            }
+          },
+          "tags": ["teacher", "dashboard"]
+        },
+        {
+          "testId": "TCH-02",
+          "title": "View Evaluation Scores",
+          "description": "Teacher views their evaluation scores and ratings",
+          "endpoint": "GET /api/teacher/scores",
+          "method": "GET",
+          "requiresAuth": "teacher",
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "data": {
+              "average_score": 4.5,
+              "total_evaluations": 10
+            }
+          },
+          "tags": ["teacher", "scores", "evaluation"]
+        },
+        {
+          "testId": "TCH-03",
+          "title": "View Subject Evaluations",
+          "description": "Teacher views evaluations for a specific subject",
+          "endpoint": "GET /api/teacher/subject/{subject_id}/evaluations",
+          "method": "GET",
+          "requiresAuth": "teacher",
+          "expectedStatus": 200,
+          "expectedResponse": {
+            "status": "success",
+            "data": {
+              "evaluations": []
+            }
+          },
+          "tags": ["teacher", "evaluations", "subject"]
+        }
+      ]
+    },
+    {
+      "suiteName": "Database Integrity",
+      "suiteId": "DB",
+      "description": "Tests for data validation and database integrity",
+      "testCases": [
+        {
+          "testId": "DB-01",
+          "title": "Evaluation Score Range Validation",
+          "description": "Verify that evaluation scores are within valid range (1-5)",
+          "checkQuery": "SELECT * FROM evaluations WHERE question_1 NOT BETWEEN 1 AND 5",
+          "expectedResult": "No rows returned",
+          "tags": ["database", "validation"]
+        },
+        {
+          "testId": "DB-02",
+          "title": "Foreign Key Integrity",
+          "description": "Verify that all evaluations have valid subject_id and student_id references",
+          "checkQuery": "SELECT e.* FROM evaluations e LEFT JOIN subjects s ON e.subject_id = s.id LEFT JOIN students st ON e.student_id = st.id WHERE s.id IS NULL OR st.id IS NULL",
+          "expectedResult": "No rows returned",
+          "tags": ["database", "integrity"]
+        },
+        {
+          "testId": "DB-03",
+          "title": "Password Hashing",
+          "description": "Verify that passwords are hashed using bcrypt",
+          "checkQuery": "SELECT COUNT(*) as plain_text FROM users WHERE password NOT LIKE '$2%'",
+          "expectedResult": "0",
+          "tags": ["database", "security"]
+        }
+      ]
+    }
+  ],
+  "testEnvironments": [
+    {
+      "name": "Development",
+      "baseUrl": "http://localhost:8000",
+      "database": "teacher_evaluation_db",
+      "dbConnection": "mysql",
+      "notes": "Local development environment"
+    },
+    {
+      "name": "Testing",
+      "baseUrl": "http://localhost:8000",
+      "database": "teacher_evaluation_db_test",
+      "dbConnection": "mysql",
+      "notes": "Testing environment with seed data"
+    }
+  ],
+  "seedData": {
+    "students": [
+      {
+        "id": 1,
+        "name": "Test Student",
+        "email": "studenttest",
+        "password": "123456"
+      }
+    ],
+    "teachers": [
+      {
+        "id": 1,
+        "name": "Test Teacher",
+        "email": "teachertest",
+        "password": "123456"
+      }
+    ]
+  },
+  "executionOrder": [
+    "AUTH",
+    "STU",
+    "TCH",
+    "DB"
+  ],
+  "reportConfig": {
+    "format": "json",
+    "includeScreenshots": true,
+    "includeLogs": true,
+    "outputPath": "./testsprite_tests/reports"
+  }
+}
