@@ -224,7 +224,7 @@
       <div id="alertSuccess" class="alert alert-success"></div>
       <div id="alertError" class="alert alert-danger"></div>
 
-      <form id="teacherForm" method="POST" action="{{ url('/backend/create/teacher') }}" novalidate>
+      <form id="teacherForm" method="POST" action="{{ secure_url('/backend/create/teacher') }}" novalidate>
         @csrf
 
         <div class="form-group">
