@@ -1,0 +1,12 @@
+{
+    "$schema": "https://railway.app/railway.schema.json",
+    "build": {
+        "builder": "NIXPACKS",
+        "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction && npm ci --prefer-offline --no-audit && npm run build && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+    },
+    "deploy": {
+        "startCommand": "mkdir -p database storage/framework/cache storage/framework/sessions storage/framework/views && touch database/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+    }
+}
