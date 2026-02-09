@@ -1,36 +1,48 @@
-# 1. ใช้ PHP 8.4-fpm เป็น Base Image
-# (ถ้า 8.4 ยังไม่มีในระบบให้ลอง 8.3 แต่จาก log คุณ Symfony บังคับ 8.4)
-FROM php:8.4-fpm-bookworm
+# ใช้ PHP 8.4 CLI สำหรับ Laravel
+FROM php:8.4-cli-bookworm
 
-# 2. ติดตั้ง System Dependencies ที่จำเป็น
+# ติดตั้ง System Dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
-    unzip
+    unzip \
+    sqlite3 \
+    libsqlite3-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 3. ล้าง Cache เพื่อลดขนาด Image
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# ติดตั้ง PHP Extensions
+RUN docker-php-ext-install pdo pdo_sqlite pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# 4. ติดตั้ง PHP Extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
-
-# 5. ติดตั้ง Composer จาก Image ทางการ
+# ติดตั้ง Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 6. ตั้งค่า Directory ในการทำงาน
+# ตั้งค่า Working Directory
 WORKDIR /var/www
 
-# 7. คัดลอกไฟล์โปรเจกต์เข้าไป
+# คัดลอกไฟล์โปรเจกต์
 COPY . .
 
-# 8. รัน Composer Install
-# (ใช้ --ignore-platform-reqs หากยังติดปัญหาเวอร์ชัน PHP ในขั้นตอน build)
-RUN composer install --optimize-autoloader --no-scripts --no-interaction
+# รัน Composer Install
+RUN composer install --optimize-autoloader --no-dev --no-interaction
 
-# 9. เปิดพอร์ตและรัน PHP-FPM
-EXPOSE 9000
-CMD ["php-fpm"]
+# สร้าง SQLite database และ storage directories
+RUN mkdir -p database storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+    && touch database/database.sqlite \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache database
+
+# Cache Laravel configuration
+RUN php artisan config:cache || true \
+    && php artisan route:cache || true \
+    && php artisan view:cache || true
+
+# เปิดพอร์ต
+EXPOSE 8080
+
+# รัน migrations และ start server
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
