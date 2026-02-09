@@ -7,7 +7,7 @@ services:
     plan: free
     envVars:
       - key: APP_KEY
-        value: base64:P6MgqjWHjCWsSiGuCR8YKBggOHJLUwGZ857sXZ3zGE6U=
+        value: base64:7x4a97WeSdvJCmCz3g/P7Wf9rmmBB3mn7q5zHG0Ztg9I=
       - key: APP_NAME
         value: TeachMetrics
       - key: APP_ENV
