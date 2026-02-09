@@ -162,7 +162,7 @@
                 </div>
             </div>
             <div class="bottom">
-                <form method="POST" action="{{ url('/backend/auth/logout') }}">
+                <form method="POST" action="{{ secure_url('/backend/auth/logout') }}">
                     @csrf
                     <button type="submit" class="btn-danger">
                         ออกจากระบบ

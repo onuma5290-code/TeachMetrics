@@ -146,7 +146,7 @@
 
       <div id="alertError" class="alert alert-danger"></div>
 
-      <form id="loginForm" method="POST" action="{{ url('/login') }}">
+      <form id="loginForm" method="POST" action="{{ secure_url('/login') }}">
         @csrf
 
         {{-- เลือก role --}}
@@ -228,8 +228,8 @@
 
       const role = $('input[name="role"]:checked').val();
       const url = (role === 'teacher') ?
-        "{{ url('/backend/auth/login/teacher') }}" :
-        "{{ url('/backend/auth/login/student') }}";
+        "{{ secure_url('/backend/auth/login/teacher') }}" :
+        "{{ secure_url('/backend/auth/login/student') }}";
 
       $.post(url, $(this).serialize())
         .done(function(res) {

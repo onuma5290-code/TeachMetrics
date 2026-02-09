@@ -239,7 +239,7 @@
       </div>
       @endif
 
-      <form method="POST" action="{{ url('/evaluate/' . $subject->subject_id) }}" id="evaluateForm" novalidate>
+      <form method="POST" action="{{ secure_url('/evaluate/' . $subject->subject_id) }}" id="evaluateForm" novalidate>
         @csrf
 
         @php
